@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IIT Tax Calculator – Sri Lanka</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root{
+--bg:#f5f7fb;--card:#ffffff;--text:#0f172a;--muted:#64748b;
+--primary:#2563eb;--accent:#60a5fa;--border:#e5e7eb;
+--shadow:0 14px 30px rgba(0,0,0,.08)
+}
+.dark{
+--bg:#0b1220;--card:#111827;--text:#e5e7eb;--muted:#9ca3af;
+--primary:#3b82f6;--border:#1f2937
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter;background:var(--bg);color:var(--text)}
+.app{max-width:520px;margin:auto;padding:16px;padding-bottom:90px}
+.header{display:flex;justify-content:space-between;align-items:center}
+.card{
+background:var(--card);border-radius:18px;padding:16px;
+box-shadow:var(--shadow);margin-top:14px
+}
+.label{font-size:12px;color:var(--muted);margin-top:10px}
+input,select{
+width:100%;padding:12px;border-radius:14px;
+border:1px solid var(--border);background:transparent;color:var(--text)
+}
+.row{display:flex;align-items:center;gap:10px;margin-top:10px}
+.fab{
+position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+background:var(--primary);color:white;border:none;border-radius:999px;
+padding:16px 34px;font-weight:600;box-shadow:0 12px 30px rgba(37,99,235,.45)
+}
+.result{
+background:linear-gradient(135deg,var(--primary),var(--accent));
+color:white;border-radius:18px;padding:16px;margin-top:14px
+}
+.breakCard{
+background:rgba(255,255,255,.18);
+border-radius:12px;padding:10px;margin-top:8px;font-size:13px
+}
+.bottomNav{
+position:fixed;bottom:0;left:0;right:0;
+background:var(--card);border-top:1px solid var(--border);
+display:flex;justify-content:space-around;padding:10px
+}
+button{background:none;border:none;font-size:13px;cursor:pointer;color:var(--text)}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<div class="header">
+<h2 id="title">IIT Tax Calculator</h2>
+<div>
+<select onchange="setLang(this.value)">
+<option value="en">EN</option>
+<option value="si">සිං</option>
+<option value="ta">த</option>
+</select>
+<button onclick="toggleDark()">🌙</button>
+</div>
+</div>
+
+<div class="card">
+<div class="label" id="lblYear">Tax Year</div>
+<select id="year">
+<option>2023/24</option>
+<option>2024/25</option>
+<option>Current</option>
+</select>
+
+<div class="label" id="lblSalary">Monthly Salary</div>
+<input id="salary" type="text" oninput="formatCurrency(this)">
+
+<div class="label" id="lblAllowance">Monthly Allowances</div>
+<input id="allowance" type="text" oninput="formatCurrency(this)">
+
+<div class="label" id="lblBonus">Annual Bonus</div>
+<input id="bonus" type="text" oninput="formatCurrency(this)">
+
+<div class="label" id="lblOther">Other Income</div>
+<input id="other" type="text" oninput="formatCurrency(this)">
+
+<div class="row">
+<strong id="lblEpf">EPF Deduction</strong>
+<input type="checkbox" id="epfCheck" checked>
+</div>
+
+<input id="epf" type="number" value="8">
+</div>
+
+<div id="output"></div>
+
+<button class="fab" onclick="calculate()" id="btnCalc">Calculate</button>
+</div>
+
+<div class="bottomNav">
+<button onclick="downloadPDF()">⬇ PDF</button>
+<button onclick="sharePDF()">📤 Share</button>
+</div>
+
+<script>
+/* ---------- LANGUAGE ---------- */
+const TEXT={
+en:{
+title:"IIT Tax Calculator",
+year:"Tax Year",
+salary:"Monthly Salary",
+allowance:"Monthly Allowances",
+bonus:"Annual Bonus",
+other:"Other Income",
+epf:"EPF Deduction",
+calc:"Calculate"
+},
+si:{
+title:"ආදායම් බදු ගණනය",
+year:"බදු වර්ෂය",
+salary:"මාසික වැටුප",
+allowance:"මාසික දීමනා",
+bonus:"වාර්ෂික බෝනස්",
+other:"වෙනත් ආදායම්",
+epf:"EPF අඩු කිරීම",
+calc:"ගණනය කරන්න"
+},
+ta:{
+title:"வருமான வரி கணிப்பான்",
+year:"வரி ஆண்டு",
+salary:"மாத சம்பளம்",
+allowance:"மாத அலவன்ஸ்",
+bonus:"வருட போனஸ்",
+other:"மற்ற வருமானம்",
+epf:"EPF கழிப்பு",
+calc:"கணக்கிடு"
+}
+};
+
+function setLang(l){
+title.innerText=TEXT[l].title;
+lblYear.innerText=TEXT[l].year;
+lblSalary.innerText=TEXT[l].salary;
+lblAllowance.innerText=TEXT[l].allowance;
+lblBonus.innerText=TEXT[l].bonus;
+lblOther.innerText=TEXT[l].other;
+lblEpf.innerText=TEXT[l].epf;
+btnCalc.innerText=TEXT[l].calc;
+}
+
+/* ---------- LOGIC ---------- */
+let lastResult=null;
+
+function toggleDark(){document.body.classList.toggle("dark");}
+
+function formatCurrency(el){
+let v=el.value.replace(/,/g,'');
+if(v===''||isNaN(v))return el.value='';
+let p=v.split('.');
+p[0]=Number(p[0]).toLocaleString();
+el.value=p.join('.');
+}
+
+function parseCur(id){
+return Number(document.getElementById(id).value.replace(/,/g,''))||0;
+}
+
+function lkr(v){
+return "LKR "+Number(v).toLocaleString(undefined,{minimumFractionDigits:2});
+}
+
+function calculate(){
+const s=parseCur("salary"),a=parseCur("allowance"),
+b=parseCur("bonus"),o=parseCur("other");
+
+let annual=(s+a)*12+b+o;
+if(epfCheck.checked)annual-=annual*(+epf.value||0)/100;
+annual=Math.max(0,annual);
+
+let relief,slabs,rates;
+if(year.value==="Current"){
+relief=1800000;slabs=[1000000,500000,500000,500000];rates=[.06,.18,.24,.30];
+}else{
+relief=1200000;slabs=[500000,500000,500000,500000,500000];rates=[.06,.12,.18,.24,.30];
+}
+
+let taxable=Math.max(0,annual-relief),tax=0,rem=taxable;
+let labels=[],values=[],lines=[];
+
+for(let i=0;i<slabs.length&&rem>0;i++){
+let amt=Math.min(rem,slabs[i]);
+let t=amt*rates[i];
+tax+=t;rem-=amt;
+labels.push(`Band ${i+1}`);values.push(t);
+lines.push(`Band ${i+1} @ ${rates[i]*100}% : ${lkr(t)}`);
+}
+if(rem>0){
+let t=rem*0.36;tax+=t;
+labels.push("36%");values.push(t);
+lines.push(`Balance @ 36% : ${lkr(t)}`);
+}
+
+lastResult={annual,taxable,tax,labels,values};
+
+output.innerHTML=`
+<div class="result">
+<b>Annual Tax</b>
+<h2>${lkr(tax)}</h2>
+<div>${lkr(tax/12)} / month</div>
+<div class="breakCard">${lines.join("<br>")}</div>
+</div>`;
+}
+
+/* ---------- PDF ---------- */
+function generatePDF(){
+if(!lastResult)return null;
+const {jsPDF}=window.jspdf;
+const doc=new jsPDF();
+
+doc.setFontSize(18);
+doc.text("IIT Tax Report – Sri Lanka",14,18);
+doc.setFontSize(11);
+doc.text(`Generated: ${new Date().toLocaleString()}`,14,26);
+doc.line(14,30,196,30);
+
+doc.text(`Annual Income: ${lkr(lastResult.annual)}`,14,40);
+doc.text(`Taxable Income: ${lkr(lastResult.taxable)}`,14,48);
+doc.text(`Annual Tax: ${lkr(lastResult.tax)}`,14,56);
+
+const canvas=document.createElement("canvas");
+new Chart(canvas,{type:"pie",
+data:{labels:lastResult.labels,datasets:[{data:lastResult.values}]},
+options:{responsive:false}});
+doc.addImage(canvas.toDataURL(),"PNG",30,65,150,80);
+
+doc.setFontSize(9);
+doc.text("Disclaimer: Estimate only. Verify with IRD Sri Lanka.",14,155);
+
+return doc.output("blob");
+}
+
+function downloadPDF(){
+if(!lastResult){alert("Please calculate first.");return;}
+const b=generatePDF();
+const a=document.createElement("a");
+a.href=URL.createObjectURL(b);
+a.download="IIT_Tax_Report.pdf";
+a.click();
+}
+
+async function sharePDF(){
+if(!lastResult){alert("Please calculate first.");return;}
+const b=generatePDF();
+const f=new File([b],"IIT_Tax_Report.pdf",{type:"application/pdf"});
+if(navigator.canShare&&navigator.canShare({files:[f]})){
+await navigator.share({files:[f],title:"IIT Tax Report"});
+}else{
+window.open(URL.createObjectURL(b),"_blank");
+alert("Direct share not supported. PDF opened.");
+}
+}
+</script>
+</body>
+</html>
