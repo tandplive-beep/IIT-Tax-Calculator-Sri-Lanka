@@ -158,7 +158,14 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 20px 0; }
     color: var(--muted);
     line-height: 1.6;
     margin-top: 30px;
-    padding-bottom: 40px;
+}
+
+.copyright-section {
+    text-align: center;
+    margin-top: 40px;
+    padding-bottom: 20px;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
 }
 </style>
 </head>
@@ -168,59 +175,66 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 20px 0; }
 
 <div style="display:flex;justify-content:space-between;align-items:center;">
     <h2 style="margin:0;">TaxWise <span style="color:var(--primary)">SL</span></h2>
-    <button onclick="toggleDark()" style="font-size: 20px;">🌓</button>
+    <div style="display:flex; gap:10px;">
+        <select id="langSelect" onchange="changeLang()" style="width:auto; padding:5px 10px; font-size:12px;">
+            <option value="en">English</option>
+            <option value="si">සිංහල</option>
+            <option value="ta">தமிழ்</option>
+        </select>
+        <button onclick="toggleDark()" style="font-size: 20px;">🌓</button>
+    </div>
 </div>
 
 <div class="card">
-    <div class="label">Tax Year</div>
+    <div class="label" id="lbl_year">Tax Year</div>
     <select id="year"></select>
 
-    <div class="label">Monthly Salary</div>
-    <input id="salary" type="number" placeholder="0">
+    <div class="label" id="lbl_salary">Monthly Salary</div>
+    <input id="salary" type="text" inputmode="numeric" placeholder="0" oninput="handleTyping(event)">
 
-    <div class="label">Monthly Allowances</div>
-    <input id="allowance" type="number" placeholder="0">
+    <div class="label" id="lbl_allowance">Monthly Allowances</div>
+    <input id="allowance" type="text" inputmode="numeric" placeholder="0" oninput="handleTyping(event)">
+ 
+    <div class="label" id="lbl_bonus">Annual Bonus</div>
+    <input id="bonus" type="text" inputmode="numeric" placeholder="0" oninput="handleTyping(event)">
 
-    <div class="label">Annual Bonus</div>
-    <input id="bonus" type="number" placeholder="0">
-
-    <div class="label">Other Income</div>
-    <input id="other" type="number" placeholder="0">
+    <div class="label" id="lbl_other">Other Income</div>
+    <input id="other" type="text" inputmode="numeric" placeholder="0" oninput="handleTyping(event)">
 
     <hr>
 
     <div style="display:flex; justify-content: space-between; align-items: center;">
-        <div class="label" style="margin:0">Enable EPF Calculations</div>
-        <input type="checkbox" id="epfCheck" checked style="width: 20px; height: 20px;">
+        <div class="label" id="lbl_epfCheck" style="margin:0">Enable EPF Calculations</div>
+        <input type="checkbox" id="epfCheck" style="width: 20px; height: 20px;">
     </div>
 
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
         <div>
-            <div class="label">Employee EPF %</div>
+            <div class="label" id="lbl_epfRate">Employee EPF %</div>
             <input id="epfRate" type="number" value="8">
         </div>
         <div>
-            <div class="label">Employer EPF %</div>
+            <div class="label" id="lbl_employerEpf">Employer EPF %</div>
             <input id="employerEpf" type="number" value="12">
         </div>
     </div>
 
-    <div class="label">ETF %</div>
+    <div class="label" id="lbl_etfRate">ETF %</div>
     <input id="etfRate" type="number" value="3">
 
     <hr>
 
-    <div class="label">Self-Assessed Payments</div>
-    <input id="selfPaid" type="number" value="0">
+    <div class="label" id="lbl_selfPaid">Self-Assessed Payments</div>
+    <input id="selfPaid" type="text" inputmode="numeric" value="0" oninput="handleTyping(event)">
 
-    <div class="label">Tax Credits</div>
-    <input id="credits" type="number" value="0">
+    <div class="label" id="lbl_credits">Tax Credits</div>
+    <input id="credits" type="text" inputmode="numeric" value="0" oninput="handleTyping(event)">
 </div>
 
 <div id="summaryView"></div>
 
 <div class="card" id="chartCard" style="display:none; padding: 20px;">
-    <div class="label" style="margin-top:0">Wealth Distribution</div>
+    <div class="label" id="lbl_wealth" style="margin-top:0">Wealth Distribution</div>
     <div class="chart-container">
         <canvas id="taxChart"></canvas>
     </div>
@@ -228,7 +242,7 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 20px 0; }
 
 <div id="historyView" style="display:none;">
     <div class="card">
-        <div class="label" style="margin-top:0">Tax Comparison (Last 2 Calculations)</div>
+        <div class="label" id="lbl_comparison" style="margin-top:0">Tax Comparison (Last 2 Calculations)</div>
         <div id="comparisonText" style="font-size: 14px; margin-bottom: 15px; font-weight: 500;"></div>
         <div class="chart-container">
             <canvas id="historyChart"></canvas>
@@ -236,18 +250,27 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 20px 0; }
     </div>
 </div>
 
-<div class="disclaimer">
+<div class="disclaimer" id="disclaimer_box">
     <p><strong>Disclaimer:</strong> This tool provides estimates for informational purposes only and does not constitute financial advice. Verify results with the Inland Revenue Department (IRD) of Sri Lanka.</p>
 </div>
 
-<button class="fab" onclick="calculate()">CALCULATE</button>
+<div class="copyright-section">
+    <p style="font-size: 13px; color: var(--muted); margin: 0;">
+        &copy; <script>document.write(new Date().getFullYear())</script> <b>TaxWise SL</b>. All Rights Reserved.
+    </p>
+    <p style="font-size: 11px; color: var(--muted); opacity: 0.8; margin-top: 5px;">
+        TANdplive / TaxWise SL - Version 8.0
+    </p>
+</div>
+
+<button class="fab" id="btn_calculate" onclick="calculate()">CALCULATE</button>
 </div>
 
 <div class="bottomNav">
-    <button onclick="openSummary()"><span>📋</span>Summary</button>
-    <button onclick="openHistory()"><span>📊</span>History</button>
-    <button onclick="downloadPDF()"><span>⬇️</span>PDF</button>
-    <button onclick="sharePDF()"><span>📤</span>Share</button>
+    <button onclick="openSummary()"><span id="nav_sum_icon">📋</span><span id="nav_sum_text">Summary</span></button>
+    <button onclick="openHistory()"><span id="nav_his_icon">📊</span><span id="nav_his_text">Comparison</span></button>
+    <button onclick="downloadPDF()"><span id="nav_pdf_icon">⬇️</span><span id="nav_pdf_text">PDF</span></button>
+    <button onclick="sharePDF()"><span id="nav_sha_icon">📤</span><span id="nav_sha_text">Share</span></button>
 </div>
 
 <script>
@@ -255,6 +278,70 @@ let lastResult = null;
 let chart = null;
 let historyChart = null;
 let historyData = [];
+
+const i18n = {
+    en: {
+        year: "Tax Year", salary: "Monthly Salary", allowance: "Monthly Allowances", bonus: "Annual Bonus", other: "Other Income",
+        epfCheck: "Enable EPF Calculations", epfRate: "Employee EPF %", employerEpf: "Employer EPF %", etfRate: "ETF %",
+        selfPaid: "Self-Assessed Payments", credits: "Tax Credits", wealth: "Wealth Distribution", comparison: "Tax Comparison (Last 2 Calculations)",
+        calculate: "CALCULATE", summary: "Summary", history: "Comparison", share: "Share", 
+        disclaimer: "<strong>Disclaimer:</strong> This tool provides estimates for informational purposes only and does not constitute financial advice. Verify results with the Inland Revenue Department (IRD) of Sri Lanka.",
+        taxYear: "Tax Year", netPayable: "Net Tax Payable (Annual)", income: "Income", taxable: "Taxable", epf: "EPF (8%)", monthly: "Monthly", breakdown: "Breakdown",
+        takehome: "Take-home", empEpf: "Employee EPF", emprEpf: "Employer EPF", etf: "ETF", tax: "Tax", 
+        compStart: "Perform at least two calculations to see a comparison.", compInc: "Increase", compDec: "Decrease", compOf: "of", compThan: "compared to previous session."
+    },
+    si: {
+        year: "බදු වර්ෂය", salary: "මාසික වැටුප", allowance: "මාසික දීමනා", bonus: "වාර්ෂික ප්‍රසාද දීමනා", other: "වෙනත් ආදායම්",
+        epfCheck: "EPF ගණනය කිරීම් සක්‍රීය කරන්න", epfRate: "සේවක EPF %", employerEpf: "සේව්‍ය EPF %", etfRate: "ETF %",
+        selfPaid: "ස්වයං තක්සේරු ගෙවීම්", credits: "බදු සහන", wealth: "ධන ව්‍යාප්තිය", comparison: "බදු සැසඳීම (අවසාන ගණනය කිරීම් 2)",
+        calculate: "ගණනය කරන්න", summary: "සාරාංශය", history: "සැසඳීම", share: "බෙදාගන්න",
+        disclaimer: "<strong>වගකීම් ප්‍රකාශය:</strong> මෙම මෙවලම තොරතුරු දැනගැනීම සඳහා පමණක් වන අතර මූල්‍ය උපදෙස් ලබා නොදේ. ශ්‍රී ලංකා දේශීය ආදායම් දෙපාර්තමේන්තුව (IRD) සමඟ ප්‍රතිඵල තහවුරු කරගන්න.",
+        taxYear: "බදු වර්ෂය", netPayable: "ශුද්ධ බදු මුදල (වාර්ෂික)", income: "ආදායම", taxable: "බදු අය කළ හැකි", epf: "EPF (8%)", monthly: "මාසික", breakdown: "බිඳවැටීම",
+        takehome: "අතට ලැබෙන මුදල", empEpf: "සේවක EPF", emprEpf: "සේව්‍ය EPF", etf: "ETF", tax: "බදු",
+        compStart: "සැසඳීමක් බැලීමට අවම වශයෙන් ගණනය කිරීම් දෙකක් සිදු කරන්න.", compInc: "වැඩිවීම", compDec: "අඩුවීම", compOf: "", compThan: "පෙර සැසියට සාපේක්ෂව."
+    },
+    ta: {
+        year: "வரி ஆண்டு", salary: "மாதாந்திர சம்பளம்", allowance: "மாதாந்திர கொடுப்பனவுகள்", bonus: "ஆண்டு போனஸ்", other: "இதர வருமானம்",
+        epfCheck: "EPF கணக்கீடுகளை செயல்படுத்தவும்", epfRate: "ஊழியர் EPF %", employerEpf: "முதலாளி EPF %", etfRate: "ETF %",
+        selfPaid: "சுய மதிப்பீட்டு கொடுப்பனவுகள்", credits: "வரி வரவுகள்", wealth: "செல்வ விநியோகம்", comparison: "வரி ஒப்பீடு (கடந்த 2 கணக்கீடுகள்)",
+        calculate: "கணக்கிடுக", summary: "சுருக்கம்", history: "ஒப்பீடு", share: "பகிர்",
+        disclaimer: "<strong>பொறுப்புத் துறப்பு:</strong> இந்த கருவி தகவல் நோக்கங்களுக்காக மட்டுமே மதிப்பீடுகளை வழங்குகிறது மற்றும் நிதி ஆலோசனையாக அமையாது. முடிவுகளை இலங்கையின் உள்நாட்டு இறைவரித் திணைக்களத்துடன் (IRD) சரிபார்க்கவும்.",
+        taxYear: "வரி ஆண்டு", netPayable: "நிகர வரி செலுத்த வேண்டியது (ஆண்டு)", income: "வருமானம்", taxable: "வரிக்குரியது", epf: "EPF (8%)", monthly: "மாதாந்திர", breakdown: "பகுப்பாய்வு",
+        takehome: "கையில் கிடைக்கும் தொகை", empEpf: "ஊழியர் EPF", emprEpf: "முதலாளி EPF", etf: "ETF", tax: "வரி",
+        compStart: "ஒப்பீட்டைப் பார்க்க குறைந்தது இரண்டு கணக்கீடுகளைச் செய்யவும்.", compInc: "அதிகரிப்பு", compDec: "குறைவு", compOf: "", compThan: "முந்தைய அமர்வுடன் ஒப்பிடும்போது."
+    }
+};
+
+function changeLang() {
+    const l = i18n[document.getElementById('langSelect').value];
+    document.getElementById('lbl_year').innerText = l.year;
+    document.getElementById('lbl_salary').innerText = l.salary;
+    document.getElementById('lbl_allowance').innerText = l.allowance;
+    document.getElementById('lbl_bonus').innerText = l.bonus;
+    document.getElementById('lbl_other').innerText = l.other;
+    document.getElementById('lbl_epfCheck').innerText = l.epfCheck;
+    document.getElementById('lbl_epfRate').innerText = l.epfRate;
+    document.getElementById('lbl_employerEpf').innerText = l.employerEpf;
+    document.getElementById('lbl_etfRate').innerText = l.etfRate;
+    document.getElementById('lbl_selfPaid').innerText = l.selfPaid;
+    document.getElementById('lbl_credits').innerText = l.credits;
+    document.getElementById('lbl_wealth').innerText = l.wealth;
+    document.getElementById('lbl_comparison').innerText = l.comparison;
+    document.getElementById('btn_calculate').innerText = l.calculate;
+    document.getElementById('nav_sum_text').innerText = l.summary;
+    document.getElementById('nav_his_text').innerText = l.history;
+    document.getElementById('nav_sha_text').innerText = l.share;
+    document.getElementById('disclaimer_box').innerHTML = `<p>${l.disclaimer}</p>`;
+    if(lastResult) renderSummary(lastResult);
+    if(document.getElementById('historyView').style.display === "block") openHistory();
+}
+
+function handleTyping(e) {
+    let value = e.target.value.replace(/,/g, '');
+    if (!isNaN(value) && value !== "") {
+        e.target.value = Number(value).toLocaleString('en-US');
+    }
+}
 
 function getCurrentTaxYear(){
     const now = new Date();
@@ -275,6 +362,7 @@ function populateYears(){
 
 window.onload = () => {
     populateYears();
+    document.getElementById('epfCheck').checked = false; // Unticked by default
     if(localStorage.getItem("darkMode") === "on") document.body.classList.add("dark");
 };
 
@@ -283,7 +371,11 @@ function toggleDark(){
     localStorage.setItem("darkMode", document.body.classList.contains("dark") ? "on" : "off");
 }
 
-function parseNum(id){ return Number(document.getElementById(id).value) || 0; }
+function parseNum(id){ 
+    let val = document.getElementById(id).value.replace(/,/g, '');
+    return Number(val) || 0; 
+}
+
 function lkr(v){ return "LKR " + Number(v).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
 
 function getTaxRules(year){
@@ -347,10 +439,10 @@ function calculate(){
         timestamp: new Date().toLocaleTimeString()
     };
 
-    // Save to history list
     historyData.push(lastResult);
     if(historyData.length > 5) historyData.shift();
 
+    openSummary();
     renderSummary(lastResult);
     document.getElementById('chartCard').style.display = 'block';
     drawChart(annualIncome, epfDeduction, netTax, employerEPF, etf);
@@ -359,31 +451,33 @@ function calculate(){
 }
 
 function renderSummary(r){
+    const l = i18n[document.getElementById('langSelect').value];
     document.getElementById('summaryView').innerHTML = `
     <div class="result">
-        <div style="font-size:12px; opacity:0.8; margin-bottom:4px">Tax Year: ${r.year}</div>
+        <div style="font-size:12px; opacity:0.8; margin-bottom:4px">${l.taxYear}: ${r.year}</div>
         <h1 style="margin:0; font-size:32px">${lkr(r.netTax)}</h1>
-        <div style="font-size:14px; opacity:0.9; margin-bottom:16px">Net Tax Payable (Annual)</div>
+        <div style="font-size:14px; opacity:0.9; margin-bottom:16px">${l.netPayable}</div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:12px; border-top:1px solid rgba(255,255,255,0.2); padding-top:15px;">
-            <div>Income: <b>${lkr(r.annualIncome)}</b></div>
-            <div>Taxable: <b>${lkr(r.taxableIncome)}</b></div>
-            <div>EPF (8%): <b>${lkr(r.epfDeduction)}</b></div>
-            <div>Monthly: <b>${lkr(r.monthlyTax)}</b></div>
+            <div>${l.income}: <b>${lkr(r.annualIncome)}</b></div>
+            <div>${l.taxable}: <b>${lkr(r.taxableIncome)}</b></div>
+            <div>${l.epf}: <b>${lkr(r.epfDeduction)}</b></div>
+            <div>${l.monthly}: <b>${lkr(r.monthlyTax)}</b></div>
         </div>
         <div style="margin-top:15px; font-size:11px; background:rgba(0,0,0,0.1); padding:10px; border-radius:10px;">
-            <b>Breakdown:</b><br>${r.breakdown.join("<br>")}
+            <b>${l.breakdown}:</b><br>${r.breakdown.join("<br>")}
         </div>
     </div>`;
 }
 
 function drawChart(income, epf, tax, employerEPF, etf){
+    const l = i18n[document.getElementById('langSelect').value];
     const ctx = document.getElementById('taxChart').getContext('2d');
     if(chart) chart.destroy();
     const takeHome = Math.max(0, income - epf - tax);
     chart = new Chart(ctx, {
         type: "doughnut",
         data: {
-            labels: ["Take-home", "Employee EPF", "Employer EPF", "ETF", "Tax"],
+            labels: [l.takehome, l.empEpf, l.emprEpf, l.etf, l.tax],
             datasets: [{
                 data: [takeHome, epf, employerEPF, etf, tax],
                 backgroundColor: ["#10b981", "#3b82f6", "#8b5cf6", "#f59e0b", "#ef4444"],
@@ -402,29 +496,28 @@ function drawChart(income, epf, tax, employerEPF, etf){
     });
 }
 
-// Adjusted: Logic for History Bar Chart Comparison
 function openHistory(){ 
+    const l = i18n[document.getElementById('langSelect').value];
     document.getElementById('summaryView').style.display = "none";
     document.getElementById('chartCard').style.display = "none";
     document.getElementById('historyView').style.display = "block";
 
     if(historyData.length < 2) {
-        document.getElementById('comparisonText').innerHTML = "Perform at least two calculations to see a comparison.";
+        document.getElementById('comparisonText').innerHTML = l.compStart;
         return;
     }
 
     const latest = historyData[historyData.length - 1];
     const previous = historyData[historyData.length - 2];
     
-    // Comparison calculation
     const diff = latest.netTax - previous.netTax;
     const percent = previous.netTax !== 0 ? ((diff / previous.netTax) * 100).toFixed(1) : (latest.netTax > 0 ? 100 : 0);
     const color = diff > 0 ? "#ef4444" : "#10b981";
-    const status = diff > 0 ? "Increase" : "Decrease";
+    const status = diff > 0 ? l.compInc : l.compDec;
 
     document.getElementById('comparisonText').innerHTML = `
-        <span style="color:${color}; font-weight:700;">${status} of ${Math.abs(percent)}%</span> 
-        (${lkr(Math.abs(diff))}) compared to previous session.
+        <span style="color:${color}; font-weight:700;">${status} ${l.compOf} ${Math.abs(percent)}%</span> 
+        (${lkr(Math.abs(diff))}) ${l.compThan}
     `;
 
     const hCtx = document.getElementById('historyChart').getContext('2d');
@@ -458,30 +551,89 @@ function openSummary(){
     document.getElementById('chartCard').style.display = lastResult ? "block" : "none";
 }
 
-function generatePDF(){
-    if(!lastResult) return null;
-    const {jsPDF} = window.jspdf;
+function generatePDF() {
+    if (!lastResult) return null;
+    const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    doc.setFont("helvetica", "bold");
-    doc.text("IIT Tax Report – Sri Lanka", 14, 20);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
     
-    let y = 35;
-    const rows = [
-        ["Tax Year", lastResult.year],
-        ["Annual Income", lkr(lastResult.annualIncome)],
-        ["EPF Deduction", lkr(lastResult.epfDeduction)],
-        ["Taxable Income", lkr(lastResult.taxableIncome)],
-        ["Gross Tax", lkr(lastResult.grossTax)],
-        ["Net Tax Payable", lkr(lastResult.netTax)]
-    ];
+    doc.setFillColor(37, 99, 235); 
+    doc.rect(0, 0, 210, 40, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(26);
+    doc.text("TaxWise", 14, 22);
+    doc.setFont("helvetica", "normal");
+    doc.text("SL", 56, 22);
+    doc.setFontSize(10);
+    doc.text("Individual Income Tax Assessment Report", 14, 32);
+    doc.text(new Date().toLocaleDateString(), 170, 32);
 
-    rows.forEach(r => {
-        doc.text(r[0], 14, y);
-        doc.text(r[1], 100, y);
+    let y = 55;
+    doc.setTextColor(15, 23, 42); 
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("Financial Summary", 14, y);
+    y += 8;
+
+    const drawRow = (label, value, isBold = false) => {
+        doc.setFont("helvetica", isBold ? "bold" : "normal");
+        doc.setDrawColor(226, 232, 240); 
+        doc.line(14, y - 5, 196, y - 5);
+        doc.text(label, 16, y);
+        doc.text(value, 194, y, { align: "right" });
         y += 10;
+    };
+
+    drawRow("Assessment Year", lastResult.year);
+    drawRow("Gross Annual Income", lkr(lastResult.annualIncome));
+    drawRow("Employee EPF Contribution", "(" + lkr(lastResult.epfDeduction) + ")");
+    drawRow("Self-Paid / Credits", "(" + lkr(lastResult.selfPaid + lastResult.credits) + ")");
+    drawRow("Taxable Income", lkr(lastResult.taxableIncome), true);
+
+    y += 5;
+    doc.setFont("helvetica", "bold");
+    doc.text("Tax Calculation Breakdown", 14, y);
+    y += 8;
+    lastResult.breakdown.forEach(item => {
+        const parts = item.split(": ");
+        drawRow(parts[0], parts[1]);
     });
+
+    if (document.getElementById('epfCheck').checked) {
+        y += 5;
+        doc.setFont("helvetica", "bold");
+        doc.text("Employer Contributions (Statutory)", 14, y);
+        y += 8;
+        drawRow("Employer EPF (12%)", lkr(lastResult.employerEPF));
+        drawRow("ETF (3%)", lkr(lastResult.etf));
+    }
+
+    y += 5;
+    doc.setFillColor(248, 250, 252);
+    doc.rect(14, y, 182, 28, 'F');
+    doc.setDrawColor(37, 99, 235);
+    doc.setLineWidth(0.5);
+    doc.rect(14, y, 182, 28, 'D');
+    
+    doc.setTextColor(37, 99, 235);
+    doc.setFontSize(9);
+    doc.text("TOTAL ANNUAL TAX PAYABLE", 20, y + 10);
+    doc.setFontSize(18);
+    doc.text(lkr(lastResult.netTax), 20, y + 20);
+    
+    doc.setTextColor(100, 116, 139);
+    doc.setFontSize(9);
+    doc.text("Monthly Installment", 140, y + 10);
+    doc.setFontSize(12);
+    doc.text(lkr(lastResult.monthlyTax), 140, y + 20);
+
+    doc.saveGraphicsState();
+    doc.setGState(new doc.GState({opacity: 0.1}));
+    doc.setFontSize(40);
+    doc.setTextColor(150);
+    doc.text("VERIFIED BY TAXWISE SL", 40, 150, {angle: 45});
+    doc.restoreGraphicsState();
+
     return doc.output("blob");
 }
 
