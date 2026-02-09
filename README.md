@@ -1,3 +1,4 @@
+TaxWise SL
 # IIT Tax Calculator – Sri Lanka 🇱🇰
 
 A modern, offline-capable Income Tax (IIT) calculator for Sri Lanka, built as a
