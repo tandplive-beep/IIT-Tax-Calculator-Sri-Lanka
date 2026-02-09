@@ -13,11 +13,11 @@ reports, and works seamlessly on mobile and desktop.
 - 🇱🇰 Sri Lanka IIT tax slabs (2023/24, 2024/25, Current)
 - 💰 EPF deduction toggle
 - 📊 Slab-wise tax calculation
-- 📄 Professional PDF export with charts
+- 📄 Professional PDF export
 - 📤 PDF sharing (with safe fallback)
 - 🌙 Dark mode
 - 🌐 English / Sinhala / Tamil support
-- 📱 Mobile-first, modern fintech UI
+- 📱 Mobile-first, modern UI
 - ⚡ Works offline (no backend required)
 - 🧩 Can be used as:
   - Website
