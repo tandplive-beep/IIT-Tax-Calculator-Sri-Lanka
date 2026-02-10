@@ -1,4 +1,4 @@
-TaxWise SL
+TaxWise SL Version 8.1.1
 # IIT Tax Calculator – Sri Lanka 🇱🇰
 
 A modern, offline-capable Income Tax (IIT) calculator for Sri Lanka, built as a
@@ -11,7 +11,6 @@ reports, and works seamlessly on mobile and desktop.
 ## ✨ Features
 
 - 🇱🇰 Sri Lanka IIT tax slabs (2023/24, 2024/25, Current)
-- 💰 EPF deduction toggle
 - 📊 Slab-wise tax calculation
 - 📄 Professional PDF export
 - 📤 PDF sharing (with safe fallback)
