@@ -235,7 +235,7 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 20px 0; }
         &copy; <script>document.write(new Date().getFullYear())</script> <b>TaxWise SL</b>. All Rights Reserved.
     </p>
     <p style="font-size: 11px; color: var(--muted); opacity: 0.8; margin-top: 5px;">
-        TANdplive / TaxWise SL - Version 8.1.1
+        TANdplive / TaxWise SL - Version 8.1.3
     </p>
 </div>
 
@@ -263,7 +263,8 @@ const i18n = {
         disclaimer: "<strong>Disclaimer:</strong> This tool provides estimates for informational purposes only and does not constitute financial advice. Verify results with the Inland Revenue Department (IRD) of Sri Lanka.",
         taxYear: "Tax Year", netPayable: "Net Tax Payable (Annual)", income: "Income", taxable: "Taxable", monthly: "Monthly", breakdown: "Breakdown",
         takehome: "After-Tax Income", tax: "Tax", 
-        compStart: "Perform at least two calculations to see a comparison.", compInc: "Increase", compDec: "Decrease", compOf: "of", compThan: "compared to previous session."
+        compStart: "Perform at least two calculations to see a comparison.", compInc: "Increase", compDec: "Decrease", compOf: "of", compThan: "compared to previous session.",
+        refund: "Tax Refund Due", balance: "Balance Tax Payable", liability: "Tax Liability"
     },
     si: {
         year: "බදු වර්ෂය", salary: "මාසික වැටුප", allowance: "මාසික දීමනා", other: "වෙනත් ආදායම්",
@@ -272,7 +273,8 @@ const i18n = {
         disclaimer: "<strong>වගකීම් ප්‍රකාශය:</strong> මෙම මෙවලම තොරතුරු දැනගැනීම සඳහා පමණක් වන අතර මූල්‍ය උපදෙස් ලබා නොදේ. ශ්‍රී ලංකා දේශීය ආදායම් දෙපාර්තමේන්තුව (IRD) සමඟ ප්‍රතිඵල තහවුරු කරගන්න.",
         taxYear: "බදු වර්ෂය", netPayable: "ශුද්ධ බදු මුදල (වාර්ෂික)", income: "ආදායම", taxable: "බදු අය කළ හැකි", monthly: "මාසික", breakdown: "බිඳවැටීම",
         takehome: "බදු පසු ආදායම", tax: "බදු",
-        compStart: "සැසඳීමක් බැලීමට අවම වශයෙන් ගණනය කිරීම් දෙකක් සිදු කරන්න.", compInc: "වැඩිවීම", compDec: "අඩුවීම", compOf: "", compThan: "පෙර සැසියට සාපේක්ෂව."
+        compStart: "සැසඳීමක් බැලීමට අවම වශයෙන් ගණනය කිරීම් දෙකක් සිදු කරන්න.", compInc: "වැඩිවීම", compDec: "අඩුවීම", compOf: "", compThan: "පෙර සැසියට සාපේක්ෂව.",
+        refund: "බදු ප්‍රතිපූරණය", balance: "ගෙවිය යුතු ශේෂ බදු", liability: "බදු බැඳියාව"
     },
     ta: {
         year: "வரி ஆண்டு", salary: "மாதாந்திர சம்பளம்", allowance: "மாதாந்திர கொடுப்பனவுகள்", other: "இதர வருமானம்",
@@ -281,7 +283,8 @@ const i18n = {
         disclaimer: "<strong>பொறுப்புத் துறப்பு:</strong> இந்த கருவி தகவல் நோக்கங்களுக்காக மட்டுமே மதிப்பீடுகளை வழங்குகிறது மற்றும் நிதி ஆலோசனையாக அமையாது. முடிவுகளை இலங்கையின் உள்நாட்டு இறைவரித் திணைக்களத்துடன் (IRD) சரிபார்க்கவும்.",
         taxYear: "வரி ஆண்டு", netPayable: "நிகர வரி செலுத்த வேண்டியது (ஆண்டு)", income: "வருமானம்", taxable: "வரிக்குரியது", monthly: "மாதாந்திர", breakdown: "பகுப்பாய்வு",
         takehome: "வரிக்கு பிந்தைய வருமானம்", tax: "வரி",
-        compStart: "ஒப்பீட்டைப் பார்க்க குறைந்தது இரண்டு கணக்கீடுகளைச் செய்யவும்.", compInc: "அதிகரிப்பு", compDec: "குறைவு", compOf: "", compThan: "முந்தைய அமர்வுடன் ஒப்பிடும்போது."
+        compStart: "ஒப்பீட்டைப் பார்க்க குறைந்தது இரண்டு கணக்கீடுகளைச் செய்யவும்.", compInc: "அதிகரிப்பு", compDec: "குறைவு", compOf: "", compThan: "முந்தைய அமர்வுடன் ஒப்பிடும்போது.",
+        refund: "வரித் திரும்பப் பெறுதல்", balance: "மீதமுள்ள வரி செலுத்த வேண்டியது", liability: "வரி பொறுப்பு"
     }
 };
 
@@ -343,7 +346,7 @@ function parseNum(id){
     return Number(val) || 0; 
 }
 
-function lkr(v){ return "LKR " + Number(v).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+function lkr(v){ return "LKR " + Math.abs(Number(v)).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
 
 function getTaxRules(year){
     if(year === "2023/24" || year === "2024/25"){
@@ -383,13 +386,15 @@ function calculate(){
         breakdown.push(`Balance (${(rules.topRate*100).toFixed(0)}%): ${lkr(extra)}`);
     }
 
-    const netTax = Math.max(0, tax - selfPaid - credits);
+    const totalPaid = selfPaid + credits;
+    const netTax = tax - totalPaid;
     
     lastResult = {
         year: selectedYear,
         annualIncome, taxableIncome,
-        grossTax: tax, netTax, monthlyTax: netTax / 12,
+        grossTax: tax, netTax, monthlyTax: Math.max(0, netTax) / 12,
         selfPaid, credits, breakdown,
+        totalPaid,
         timestamp: new Date().toLocaleTimeString()
     };
 
@@ -399,19 +404,23 @@ function calculate(){
     openSummary();
     renderSummary(lastResult);
     document.getElementById('chartCard').style.display = 'block';
-    drawChart(annualIncome, netTax);
+    drawChart(annualIncome, Math.max(0, tax));
     
     window.scrollTo({ top: document.getElementById('summaryView').offsetTop - 20, behavior: 'smooth' });
 }
 
 function renderSummary(r){
     const l = i18n[document.getElementById('langSelect').value];
+    const statusLabel = r.netTax < 0 ? l.refund : l.balance;
+    const netValueDisplay = lkr(r.netTax);
+
     document.getElementById('summaryView').innerHTML = `
     <div class="result">
         <div style="font-size:12px; opacity:0.8; margin-bottom:4px">${l.taxYear}: ${r.year}</div>
-        <h1 style="margin:0; font-size:32px">${lkr(r.netTax)}</h1>
-        <div style="font-size:14px; opacity:0.9; margin-bottom:16px">${l.netPayable}</div>
+        <h1 style="margin:0; font-size:32px">${netValueDisplay}</h1>
+        <div style="font-size:14px; opacity:0.9; margin-bottom:16px">${statusLabel} (Annual)</div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:12px; border-top:1px solid rgba(255,255,255,0.2); padding-top:15px;">
+            <div>${l.liability}: <b>${lkr(r.grossTax)}</b></div>
             <div>${l.income}: <b>${lkr(r.annualIncome)}</b></div>
             <div>${l.taxable}: <b>${lkr(r.taxableIncome)}</b></div>
             <div>${l.monthly}: <b>${lkr(r.monthlyTax)}</b></div>
@@ -482,7 +491,7 @@ function openHistory(){
             labels: [`Prev (${previous.year})`, `Current (${latest.year})`],
             datasets: [{
                 label: 'Net Tax (LKR)',
-                data: [previous.netTax, latest.netTax],
+                data: [Math.max(0, previous.netTax), Math.max(0, latest.netTax)],
                 backgroundColor: ['#94a3b8', '#2563eb'],
                 borderRadius: 8
             }]
@@ -539,7 +548,6 @@ function generatePDF() {
 
     drawRow("Assessment Year", lastResult.year);
     drawRow("Gross Annual Income", lkr(lastResult.annualIncome));
-    drawRow("Self-Paid / Credits", "(" + lkr(lastResult.selfPaid + lastResult.credits) + ")");
     drawRow("Taxable Income", lkr(lastResult.taxableIncome), true);
 
     y += 5;
@@ -556,15 +564,22 @@ function generatePDF() {
     }
 
     y += 5;
+    drawRow("Tax Liability", lkr(lastResult.grossTax), true);
+    drawRow("Self-Paid / Credits", "(" + lkr(lastResult.totalPaid) + ")");
+
+    y += 5;
     doc.setFillColor(248, 250, 252);
     doc.rect(14, y, 182, 28, 'F');
     doc.setDrawColor(37, 99, 235);
     doc.setLineWidth(0.5);
     doc.rect(14, y, 182, 28, 'D');
     
+    // Fixed Unicode labels to standard English text for PDF compatibility
+    const finalLabel = lastResult.netTax < 0 ? "TAX REFUND DUE" : "TOTAL ANNUAL TAX PAYABLE";
+    
     doc.setTextColor(37, 99, 235);
     doc.setFontSize(9);
-    doc.text("TOTAL ANNUAL TAX PAYABLE", 20, y + 10);
+    doc.text(finalLabel, 20, y + 10);
     doc.setFontSize(18);
     doc.text(lkr(lastResult.netTax), 20, y + 20);
     
