@@ -278,12 +278,12 @@ const i18n = {
     },
     ta: {
         year: "வரி ஆண்டு", salary: "மாதாந்திர சம்பளம்", allowance: "மாதாந்திர கொடுப்பனவுகள்", other: "இதர வருமானம்",
-        selfPaid: "சுய மதிப்பீட்டு கொடுப்பனவுகள்", credits: "வரி வரவுகள்", wealth: "வருமான விநியோகம்", comparison: "வரி ஒப்பீடு (கடந்த 2 கணக்கீடுகள்)",
+        selfPaid: "சுய மதிப்பீட்டு கொடுப்பனவுகள்", credits: "வரி வரவுகள்", wealth: "வருமான விநியோகம்", comparison: "வரி ஒப்பீடு (கடந்த 2 கணக்கීடுகள்)",
         calculate: "கணக்கிடுக", summary: "சுருக்கம்", history: "ஒப்பீடு", share: "பகிர்",
         disclaimer: "<strong>பொறுப்புத் துறப்பு:</strong> இந்த கருவி தகவல் நோக்கங்களுக்காக மட்டுமே மதிப்பீடுகளை வழங்குகிறது மற்றும் நிதி ஆலோசனையாக அமையாது. முடிவுகளை இலங்கையின் உள்நாட்டு இறைவரித் திணைக்களத்துடன் (IRD) சரிபார்க்கவும்.",
         taxYear: "வரி ஆண்டு", netPayable: "நிகர வரி செலுத்த வேண்டியது (ஆண்டு)", income: "வருமானம்", taxable: "வரிக்குரியது", monthly: "மாதாந்திர", breakdown: "பகுப்பாய்வு",
         takehome: "வரிக்கு பிந்தைய வருமானம்", tax: "வரி",
-        compStart: "ஒப்பீட்டைப் பார்க்க குறைந்தது இரண்டு கணக்கீடுகளைச் செய்யவும்.", compInc: "அதிகரிப்பு", compDec: "குறைவு", compOf: "", compThan: "முந்தைய அமர்வுடன் ஒப்பிடும்போது.",
+        compStart: "ஒப்பீட்டைப் பார்க்க குறைந்தது இரண்டு கணக்கීடுகளைச் செய்யவும்.", compInc: "அதிகரிப்பு", compDec: "குறைவு", compOf: "", compThan: "முந்தைய அமர்வுடன் ஒப்பிடும்போது.",
         refund: "வரித் திரும்பப் பெறுதல்", balance: "மீதமுள்ள வரி செலுத்த வேண்டியது", liability: "வரி பொறுப்பு"
     }
 };
@@ -339,6 +339,11 @@ window.onload = () => {
 function toggleDark(){
     document.body.classList.toggle("dark");
     localStorage.setItem("darkMode", document.body.classList.contains("dark") ? "on" : "off");
+    
+    if(lastResult) {
+        drawChart(lastResult.annualIncome, Math.max(0, lastResult.grossTax));
+        if(document.getElementById('historyView').style.display === "block") openHistory();
+    }
 }
 
 function parseNum(id){ 
@@ -436,6 +441,10 @@ function drawChart(income, tax){
     const ctx = document.getElementById('taxChart').getContext('2d');
     if(chart) chart.destroy();
     const afterTax = Math.max(0, income - tax);
+    
+    const isDark = document.body.classList.contains("dark");
+    const textColor = isDark ? "#f1f5f9" : "#334155";
+
     chart = new Chart(ctx, {
         type: "doughnut",
         data: {
@@ -451,7 +460,13 @@ function drawChart(income, tax){
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom', labels: { color: getComputedStyle(document.body).getPropertyValue('--text'), font: { family: 'Plus Jakarta Sans' } } }
+                legend: { 
+                    position: 'bottom', 
+                    labels: { 
+                        color: textColor, 
+                        font: { family: 'Plus Jakarta Sans', weight: '500' } 
+                    } 
+                }
             },
             cutout: '70%'
         }
@@ -485,6 +500,9 @@ function openHistory(){
     const hCtx = document.getElementById('historyChart').getContext('2d');
     if(historyChart) historyChart.destroy();
 
+    const isDark = document.body.classList.contains("dark");
+    const textColor = isDark ? "#f1f5f9" : "#334155";
+
     historyChart = new Chart(hCtx, {
         type: 'bar',
         data: {
@@ -499,9 +517,18 @@ function openHistory(){
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: { 
+                legend: { display: false } 
+            },
             scales: {
-                y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } }
+                y: { 
+                    beginAtZero: true, 
+                    grid: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' },
+                    ticks: { color: textColor }
+                },
+                x: {
+                    ticks: { color: textColor }
+                }
             }
         }
     });
@@ -546,8 +573,11 @@ function generatePDF() {
         y += 10;
     };
 
+    const rules = getTaxRules(lastResult.year);
+
     drawRow("Assessment Year", lastResult.year);
     drawRow("Gross Annual Income", lkr(lastResult.annualIncome));
+    drawRow("Personal Tax Relief", "(" + lkr(rules.relief) + ")");
     drawRow("Taxable Income", lkr(lastResult.taxableIncome), true);
 
     y += 5;
@@ -574,7 +604,6 @@ function generatePDF() {
     doc.setLineWidth(0.5);
     doc.rect(14, y, 182, 28, 'D');
     
-    // Fixed Unicode labels to standard English text for PDF compatibility
     const finalLabel = lastResult.netTax < 0 ? "TAX REFUND DUE" : "TOTAL ANNUAL TAX PAYABLE";
     
     doc.setTextColor(37, 99, 235);
