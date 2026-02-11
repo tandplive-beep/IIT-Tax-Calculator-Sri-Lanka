@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -173,9 +173,12 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 20px 0; }
 <body>
 <div class="app">
 
-<div style="display:flex;justify-content:space-between;align-items:center;">
-    <h2 style="margin:0;">TaxWise <span style="color:var(--primary)">SL</span></h2>
-    <div style="display:flex; gap:10px;">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div>
+        <img src="https://raw.githubusercontent.com/tandplive-beep/IIT-Tax-Calculator-Sri-Lanka/refs/heads/main/file_0000000081ac71fa9f5e59de4c9df360%20(1).png" alt="TaxWise SL Logo" style="height: 60px; width: auto; display: block;">
+        <span style="font-size: 12px; color: var(--muted); font-weight: 500; margin-left: 2px;">Your Taxes, Simplified.</span>
+    </div>
+    <div style="display:flex; gap:10px; margin-top: 5px;">
         <select id="langSelect" onchange="changeLang()" style="width:auto; padding:5px 10px; font-size:12px;">
             <option value="en">English</option>
             <option value="si">සිංහල</option>
@@ -231,11 +234,16 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 20px 0; }
 </div>
 
 <div class="copyright-section">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 5px;">
+        <span style="font-size: 13px; color: var(--muted);">&copy;</span>
+        <img src="https://raw.githubusercontent.com/tandplive-beep/IIT-Tax-Calculator-Sri-Lanka/refs/heads/main/file_0000000081ac71fa9f5e59de4c9df360%20(1).png" alt="Logo" style="height: 25px; width: auto;">
+    </div>
     <p style="font-size: 13px; color: var(--muted); margin: 0;">
-        &copy; <script>document.write(new Date().getFullYear())</script> <b>TaxWise SL</b>. All Rights Reserved.
+	<span style="font-size: 13px; color: var(--muted);">&copy;</span>
+        <script>document.write(new Date().getFullYear())</script> <b>TaxWiseSL</b>. All Rights Reserved.
     </p>
     <p style="font-size: 11px; color: var(--muted); opacity: 0.8; margin-top: 5px;">
-        TANdplive / TaxWise SL - Version 8.1.4
+        TANdplive / TaxWiseSL - Version 2.0
     </p>
 </div>
 
@@ -278,12 +286,12 @@ const i18n = {
     },
     ta: {
         year: "வரி ஆண்டு", salary: "மாதாந்திர சம்பளம்", allowance: "மாதாந்திர கொடுப்பனவுகள்", other: "இதர வருமானம்",
-        selfPaid: "சுய மதிப்பீட்டு கொடுப்பனவுகள்", credits: "வரி வரவுகள்", wealth: "வருமான விநியோகம்", comparison: "வரி ஒப்பீடு (கடந்த 2 கணக்கීடுகள்)",
+        selfPaid: "சுய மதிப்பீட்டு கொடுப்பனவுகள்", credits: "வரி வரவுகள்", wealth: "வருமான விநியோகம்", comparison: "வரி ஒப்பீடு (கடந்த 2 கணக்கீடுகள்)",
         calculate: "கணக்கிடுக", summary: "சுருக்கம்", history: "ஒப்பீடு", share: "பகிர்",
         disclaimer: "<strong>பொறுப்புத் துறப்பு:</strong> இந்த கருவி தகவல் நோக்கங்களுக்காக மட்டுமே மதிப்பீடுகளை வழங்குகிறது மற்றும் நிதி ஆலோசனையாக அமையாது. முடிவுகளை இலங்கையின் உள்நாட்டு இறைவரித் திணைக்களத்துடன் (IRD) சரிபார்க்கவும்.",
         taxYear: "வரி ஆண்டு", netPayable: "நிகர வரி செலுத்த வேண்டியது (ஆண்டு)", income: "வருமானம்", taxable: "வரிக்குரியது", monthly: "மாதாந்திர", breakdown: "பகுப்பாய்வு",
         takehome: "வரிக்கு பிந்தைய வருமானம்", tax: "வரி",
-        compStart: "ஒப்பீட்டைப் பார்க்க குறைந்தது இரண்டு கணக்கීடுகளைச் செய்யவும்.", compInc: "அதிகரிப்பு", compDec: "குறைவு", compOf: "", compThan: "முந்தைய அமர்வுடன் ஒப்பிடும்போது.",
+        compStart: "ஒப்பீட்டைப் பார்க்க குறைந்தது இரண்டு கணக்கீடுகளைச் செய்யவும்.", compInc: "அதிகரிப்பு", compDec: "குறைவு", compOf: "", compThan: "முந்தைய அமர்வுடன் ஒப்பிடும்போது.",
         refund: "வரித் திரும்பப் பெறுதல்", balance: "மீதமுள்ள வரி செலுத்த வேண்டியது", liability: "வரி பொறுப்பு"
     }
 };
@@ -545,45 +553,67 @@ function generatePDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
+    const logoUrl = "https://raw.githubusercontent.com/tandplive-beep/IIT-Tax-Calculator-Sri-Lanka/refs/heads/main/file_0000000081ac71fa9f5e59de4c9df360%20(1).png";
+    
+    // 1. Clean Modern Header (White background with blue accent bar)
     doc.setFillColor(37, 99, 235); 
-    doc.rect(0, 0, 210, 40, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(26);
-    doc.text("TaxWise", 14, 22);
-    doc.setFont("helvetica", "normal");
-    doc.text("SL", 52, 22);
-    doc.setFontSize(10);
-    doc.text("Individual Income Tax Assessment Report", 14, 32);
-    doc.text(new Date().toLocaleDateString(), 170, 32);
+    doc.rect(0, 0, 5, 297, 'F'); 
 
-    let y = 55;
+    // 2. Logo Placement
+    doc.addImage(logoUrl, 'PNG', 15, 15, 80, 30);
+    
+    // Tagline in PDF
+    doc.setTextColor(148, 163, 184);
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(9);
+    doc.text("Your Taxes, Simplified.", 16, 46);
+
+    // 3. Header Text
+    doc.setTextColor(100, 116, 139); 
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("Individual Income Tax Assessment", 15, 58);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11); 
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 15, 65);
+    doc.text(`Assessment Year: ${lastResult.year}`, 193, 65, { align: "right" });
+
+    // 4. Content Area
+    let y = 82;
+    doc.setDrawColor(241, 245, 249);
+    doc.setLineWidth(0.5);
+    doc.line(15, y - 5, 195, y - 5);
+
     doc.setTextColor(15, 23, 42); 
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("Financial Summary", 14, y);
-    y += 8;
+    doc.text("Financial Summary", 15, y);
+    y += 10;
 
     const drawRow = (label, value, isBold = false) => {
         doc.setFont("helvetica", isBold ? "bold" : "normal");
-        doc.setDrawColor(226, 232, 240); 
-        doc.line(14, y - 5, 196, y - 5);
-        doc.text(label, 16, y);
-        doc.text(value, 194, y, { align: "right" });
+        doc.setFontSize(10);
+        doc.setDrawColor(241, 245, 249); 
+        doc.line(15, y + 2, 195, y + 2);
+        doc.setTextColor(100, 116, 139);
+        doc.text(label, 17, y);
+        doc.setTextColor(15, 23, 42);
+        doc.text(value, 193, y, { align: "right" });
         y += 10;
     };
 
     const rules = getTaxRules(lastResult.year);
 
-    drawRow("Assessment Year", lastResult.year);
     drawRow("Gross Annual Income", lkr(lastResult.annualIncome));
     drawRow("Personal Tax Relief", "(" + lkr(rules.relief) + ")");
     drawRow("Taxable Income", lkr(lastResult.taxableIncome), true);
 
     y += 5;
     doc.setFont("helvetica", "bold");
-    doc.text("Tax Calculation Breakdown", 14, y);
-    y += 8;
+    doc.text("Tax Calculation Breakdown", 15, y);
+    y += 10;
+
     if (lastResult.breakdown.length > 0) {
         lastResult.breakdown.forEach(item => {
             const parts = item.split(": ");
@@ -594,35 +624,40 @@ function generatePDF() {
     }
 
     y += 5;
-    drawRow("Tax Liability", lkr(lastResult.grossTax), true);
-    drawRow("Self-Paid / Credits", "(" + lkr(lastResult.totalPaid) + ")");
+    drawRow("Total Tax Liability", lkr(lastResult.grossTax));
+    drawRow("Credits & Payments", "(" + lkr(lastResult.totalPaid) + ")");
 
+    // 5. Result Box
     y += 5;
     doc.setFillColor(248, 250, 252);
-    doc.rect(14, y, 182, 28, 'F');
-    doc.setDrawColor(37, 99, 235);
-    doc.setLineWidth(0.5);
-    doc.rect(14, y, 182, 28, 'D');
+    doc.roundedRect(15, y, 180, 35, 3, 3, 'F');
     
-    const finalLabel = lastResult.netTax < 0 ? "TAX REFUND DUE" : "TOTAL ANNUAL TAX PAYABLE";
+    const finalLabel = lastResult.netTax < 0 ? "TOTAL TAX REFUND" : "NET TAX PAYABLE";
     
     doc.setTextColor(37, 99, 235);
     doc.setFontSize(9);
-    doc.text(finalLabel, 20, y + 10);
-    doc.setFontSize(18);
-    doc.text(lkr(lastResult.netTax), 20, y + 20);
+    doc.setFont("helvetica", "bold");
+    doc.text(finalLabel, 22, y + 12);
+    
+    doc.setFontSize(22);
+    doc.text(lkr(lastResult.netTax), 22, y + 25);
     
     doc.setTextColor(100, 116, 139);
     doc.setFontSize(9);
-    doc.text("Monthly Installment", 140, y + 10);
-    doc.setFontSize(12);
-    doc.text(lkr(lastResult.monthlyTax), 140, y + 20);
+    doc.setFont("helvetica", "normal");
+    doc.text("ESTIMATED MONTHLY", 140, y + 12);
+    doc.setFontSize(14);
+    doc.setTextColor(15, 23, 42);
+    doc.text(lkr(lastResult.monthlyTax), 140, y + 25);
+
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184);
+    doc.text("This is an electronically generated report. Verify with IRD Sri Lanka for official filing.", 105, 285, {align: "center"});
 
     doc.saveGraphicsState();
-    doc.setGState(new doc.GState({opacity: 0.1}));
+    doc.setGState(new doc.GState({opacity: 0.05}));
     doc.setFontSize(40);
-    doc.setTextColor(150);
-    doc.text("VERIFIED BY TAXWISE SL", 40, 150, {angle: 45});
+    doc.text("TAXWISE SL VERIFIED", 40, 150, {angle: 45});
     doc.restoreGraphicsState();
 
     return doc.output("blob");
@@ -650,4 +685,3 @@ async function sharePDF(){
 </script>
 </body>
 </html>
-
